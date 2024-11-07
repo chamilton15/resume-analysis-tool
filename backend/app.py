@@ -1,9 +1,11 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import requests
 from PyPDF2 import PdfReader
 from io import BytesIO
 
 app = Flask(__name__)
+CORS(app)
 
 # Google Gemini API Information
 API_KEY = "AIzaSyCBWZKzXAcCW_q7MDGuF3wm1ZHV2DHWKSU"  # Replace with your actual Google API key

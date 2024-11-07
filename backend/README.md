@@ -8,13 +8,14 @@ This Flask application allows you to send either text or a PDF file to the Googl
 - Flask
 - PyPDF2 (for PDF processing)
 - Requests (for making HTTP requests)
+- Cross-Origin Resource Sharing (CORS: for React to communicate with Flask)
 
 ## Setup
 
 1. Clone this repository.
 2. Install dependencies:
    ```bash
-   pip install flask requests PyPDF2
+   pip install flask requests PyPDF2 flask-cors
    ```
 3. Replace the placeholder `API_KEY` in `app.py` with your actual Google API key.
 
