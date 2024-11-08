@@ -1,13 +1,19 @@
 import React, { useState } from 'react';
+import TextBox from './TextBox';
 
 const FileUpload = () => {
   const [file, setFile] = useState(null);
+  const [text, setText] = useState('');
   const [result, setResult] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   const handleFileChange = (event) => {
-    setFile(event.target.files[0]);
+    setFile(event.target.files[0]); // Update file state when file changes
+  };
+
+  const handleTextChange = (newText) => {
+    setText(newText); // Update text state when text changes in TextBox
   };
 
   const handleSubmit = async (event) => {
@@ -20,6 +26,10 @@ const FileUpload = () => {
     console.log('Uploaded file:', file);
     const formData = new FormData();
     formData.append('file', file);
+    if (text) {
+      formData.append('text', text)
+    }
+    console.log("Form Data: ", formData)
 
     try {
       setLoading(true);
@@ -51,15 +61,36 @@ const FileUpload = () => {
     }
   };
 
+  // Function to format the text by converting line breaks into <br> and paragraphs
+  const formatResult = (text) => {
+    // Split by double line breaks for paragraphs
+    return text.split(/\n\n+/).map((paragraph, index) => (
+      <p key={index}>
+        {paragraph.split('\n').map((line, lineIndex) => (
+          <React.Fragment key={lineIndex}>
+            {line}
+            <br />
+          </React.Fragment>
+        ))}
+      </p>
+    ));
+  };
+
   return (
     <div className="file-upload-container">
+      <TextBox onTextChange={handleTextChange} /> {/* Integrate TextBox */}
       <form onSubmit={handleSubmit}>
         <input type="file" accept=".pdf,.doc,.docx" onChange={handleFileChange} />
         <button type="submit" disabled={loading}>Upload Resume</button>
       </form>
       {loading && <p>Processing your file...</p>}
       {file && <p>Selected file: {file.name}</p>}
-      {result && <div><h3>Analysis Result:</h3><p>{result}</p></div>}
+      {result && (
+        <div>
+          <h3>Analysis Result:</h3>
+          {formatResult(result)} {/* Display formatted paragraphs */}
+        </div>
+      )}
       {error && <div style={{ color: 'red' }}><p>Error: {error}</p></div>}
     </div>
   );
