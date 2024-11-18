@@ -46,7 +46,8 @@ const FileUpload = () => {
       if (response.ok) {
         // Check if result has the structure { parts: Array, role: string }
         if (data.result && data.result.parts && data.result.parts.length > 0) {
-          setResult(data.result.parts[0].text); // Extracts the text from the first part
+          const formattedResult = formatResult(data.result.parts[0].text)
+          setResult(formattedResult); // Extracts the text from the first part
         } else {
           setResult('No text found in the response.');
         }
@@ -61,19 +62,49 @@ const FileUpload = () => {
     }
   };
 
-  // Function to format the text by converting line breaks into <br> and paragraphs
   const formatResult = (text) => {
-    // Split by double line breaks for paragraphs
-    return text.split(/\n\n+/).map((paragraph, index) => (
-      <p key={index}>
-        {paragraph.split('\n').map((line, lineIndex) => (
-          <React.Fragment key={lineIndex}>
-            {line}
-            <br />
-          </React.Fragment>
-        ))}
-      </p>
-    ));
+    const lines = text.split('\n');
+  
+    const formattedLines = lines.map((line) => {
+      // Clean up the line by trimming and removing extra "**" around inline bold text
+      let cleanedLine = line.trim();
+  
+      // Inline bold: Replace "**text**" with <strong>text</strong>
+      cleanedLine = cleanedLine.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+  
+      // Remove any extra trailing "**" after bold text (to handle cases like "**text**" or "text**")
+      cleanedLine = cleanedLine.replace(/\*\*$/, '');
+  
+      // Empty lines (for spacing)
+      if (cleanedLine === '') {
+        return '<br>'; // For empty lines
+      }
+  
+      // Sub-bullets (e.g., "* **Subpoint**")
+      if (cleanedLine.startsWith('* ')) {
+        return `<li style="margin-left: 20px;">${cleanedLine.replace('*', '').trim()}</li>`;
+      }
+  
+      // Main bullet points: Only treat lines that start with "**" but have no spaces after the `**` as true bullets
+      if (cleanedLine.startsWith('**') && !cleanedLine.includes(' ')) {
+        const bulletContent = cleanedLine.replace(/\*\*/g, '').trim();
+        return `<li>${bulletContent}</li>`;
+      }
+  
+      // Bolded paragraphs (lines that start with "**" and contain text after it are treated as bolded paragraphs)
+      if (cleanedLine.startsWith('**') && cleanedLine.includes(' ')) {
+        return `<p>${cleanedLine}</p>`;
+      }
+  
+      // Default paragraphs for regular text (non-bullet points and non-bold text)
+      return `<p>${cleanedLine}</p>`;
+    });
+  
+    // Join lines and wrap in <ul> for bullet points
+    const htmlResult = formattedLines.join('');
+    return htmlResult.includes('<li>')
+      ? `<ul>${htmlResult}</ul>`
+      : htmlResult;
   };
 
   return (
@@ -86,10 +117,11 @@ const FileUpload = () => {
       {loading && <p>Processing your file...</p>}
       {file && <p>Selected file: {file.name}</p>}
       {result && (
-        <div>
-          <h3>Analysis Result:</h3>
-          {formatResult(result)} {/* Display formatted paragraphs */}
-        </div>
+        <div
+          className="result-container"
+          style={{ textAlign: 'left', whiteSpace: 'pre-line' }}
+          dangerouslySetInnerHTML={{ __html: result }}
+        />
       )}
       {error && <div style={{ color: 'red' }}><p>Error: {error}</p></div>}
     </div>
