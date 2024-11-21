@@ -13,6 +13,7 @@
   border: 1px solid #ddd;
   border-radius: 8px;
   background-color: #f9f9f9;
+  text-align: center; /* Center-align the landing container */
 }
 
 .landing-container h1 {
@@ -25,9 +26,10 @@
   margin-bottom: 30px;
 }
 
-/* File Upload Styles */
+/* File Upload Section (Keep Centered) */
 .file-upload-container {
   margin-top: 20px;
+  text-align: center; /* Ensure this section stays centered */
 }
 
 .file-upload-container input[type="file"] {
@@ -52,9 +54,10 @@
   color: #333;
 }
 
-/* Text Box Styles */
+/* Text Box Section (Keep Centered) */
 .text-box-container {
   margin-top: 20px;
+  text-align: center; /* Center-align text box */
 }
 
 .text-box-container textarea {
@@ -70,4 +73,56 @@
   font-size: 0.9rem;
   color: #666;
   margin-top: 5px;
+}
+
+/* Similarity Scores (Left-Aligned) */
+.similarity-container {
+  margin-top: 20px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  background-color: #fff;
+  text-align: left; /* Ensure this section is left-aligned */
+}
+
+.similarity-container h3 {
+  font-size: 1.2rem;
+  margin-bottom: 10px;
+}
+
+.similarity-container p {
+  margin: 5px 0;
+  font-size: 1rem;
+  color: #333;
+}
+
+/* Result Container (Left-Aligned) */
+.result-container {
+  margin-top: 20px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  background-color: #fff;
+  text-align: left; /* Ensure this section is left-aligned */
+}
+
+.result-container h2 {
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+}
+
+.result-container p {
+  margin: 5px 0;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #333;
+}
+
+.result-container pre {
+  background-color: #f9f9f9;
+  padding: 10px;
+  overflow-x: auto;
+  border-radius: 5px;
+  font-size: 0.9rem;
+  font-family: monospace;
 }
