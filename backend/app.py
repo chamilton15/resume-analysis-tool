@@ -5,6 +5,8 @@ from PyPDF2 import PdfReader
 from io import BytesIO
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
+import textstat
+import bert_score
 
 app = Flask(__name__)
 CORS(app)
@@ -57,6 +59,25 @@ def compute_similarity(text1, text2):
     sim = cosine_similarity([embeddings[0]], [embeddings[1]])[0][0]
     return float(sim)  # Convert to Python float type to ensure JSON serialization compatibility
 
+def compute_bert_score(text1, text2):
+    """Compute BERTScore between two texts."""
+    # BERTScore returns precision, recall, f1-score
+    P, R, F1 = bert_score.score([text1], [text2], lang="en")
+    return {
+        "precision": P.mean().item(),  # Mean Precision score
+        "recall": R.mean().item(),     # Mean Recall score
+        "f1": F1.mean().item()         # Mean F1 score
+    }
+
+def compute_readability(text):
+    """Compute readability scores for the given text."""
+    flesch_reading_ease = textstat.textstat.flesch_reading_ease(text)
+    flesch_kincaid_grade = textstat.textstat.flesch_kincaid_grade(text)
+    return {
+        "flesch_reading_ease": flesch_reading_ease,
+        "flesch_kincaid_grade": flesch_kincaid_grade
+    }
+
 @app.route('/api/upload', methods=['POST'])
 def upload():
     text_input = request.form.get('text')
@@ -75,8 +96,10 @@ def upload():
     if error:
         return jsonify({"error": f"Failed to extract text from PDF: {error}"}), 500
 
-    # Compute the similarity before refinement
+    # Compute the similarity, BERTScore, and readability before refinement
     pre_refine_similarity = compute_similarity(text_input, resume_text)
+    pre_refine_bert_score = compute_bert_score(text_input, resume_text)
+    pre_refine_readability = compute_readability(resume_text)
 
     # Combine text as input for the LLM
     combined_text = text_input + "\n\n" + resume_text
@@ -89,13 +112,19 @@ def upload():
     # If refined_result is a dictionary and contains a text field, use it
     refined_text = refined_result.get('parts', [{}])[0].get('text', '') if isinstance(refined_result, dict) else refined_result
 
-    # Compute the similarity after refinement
+    # Compute the similarity, BERTScore, and readability after refinement
     post_refine_similarity = compute_similarity(text_input, refined_text)
+    post_refine_bert_score = compute_bert_score(text_input, refined_text)
+    post_refine_readability = compute_readability(refined_text)
 
     return jsonify({
         "result": refined_result,
         "pre_refine_similarity": pre_refine_similarity,
-        "post_refine_similarity": post_refine_similarity
+        "post_refine_similarity": post_refine_similarity,
+        "pre_refine_bert_score": pre_refine_bert_score,
+        "post_refine_bert_score": post_refine_bert_score,
+        "pre_refine_readability": pre_refine_readability,
+        "post_refine_readability": post_refine_readability
     })
 
 if __name__ == '__main__':

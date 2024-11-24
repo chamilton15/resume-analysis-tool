@@ -10,6 +10,8 @@ const FileUpload = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [similarities, setSimilarities] = useState(null); // To store pre and post refinement similarity scores
+  const [bertScore, setBERTScore] = useState(null);
+  const [readability, setReadability] = useState(null);
 
   const handleFileChange = (event) => {
     setFile(event.target.files[0]); // Update the file state
@@ -57,6 +59,24 @@ const FileUpload = () => {
           console.log("Post-refinement similarity:", data.post_refine_similarity);
         }
 
+        if (data.pre_refine_bert_score !== undefined && data.post_refine_bert_score !== undefined) {
+          setBERTScore({
+            pre: data.pre_refine_bert_score,
+            post: data.post_refine_bert_score,
+          });
+          console.log("Pre-refinement BERTScore:", data.pre_refine_bert_score);
+          console.log("Post-refinement BERTScore:", data.post_refine_bert_score);
+        }
+
+        if (data.pre_refine_readability !== undefined && data.post_refine_readability !== undefined) {
+          setReadability({
+            pre: data.pre_refine_readability,
+            post: data.post_refine_readability,
+          });
+          console.log("Pre-refinement Readability:", data.pre_refine_readability);
+          console.log("Post-refinement Readability:", data.post_refine_readability);
+        }
+
         // Set results
         if (data.result && data.result.parts && data.result.parts.length > 0) {
           setResult(data.result.parts[0].text);
@@ -93,14 +113,52 @@ const FileUpload = () => {
       {/* Display selected file */}
       {file && <p>Selected file: {file.name}</p>}
 
-      {/* Similarity scores */}
-      {similarities && (
-        <div>
-          <h3>Position Match Rate:</h3>
-          <p>Before Refinement: {(similarities.pre * 100).toFixed(2)}%</p>
-          <p>After Refinement: {(similarities.post * 100).toFixed(2)}%</p>
-        </div>
-      )}
+      <div style={{ display: "flex", justifyContent: "space-between", gap: "20px" }}>
+        {/* Similarity scores */}
+        {similarities && (
+          <div style={{ flex: 1 }}>
+            <h3>Position Match Rate (Higher is Better):</h3>
+            <p>Before Refinement: {(similarities.pre * 100).toFixed(2)}%</p>
+            <p>After Refinement: {(similarities.post * 100).toFixed(2)}%</p>
+          </div>
+        )}
+
+        {/* BERTScore for similarity */}
+        {bertScore && (
+          <div style={{ flex: 1 }}>
+            <h3>BERTScore (Higher is Better for All):</h3>
+            <p>
+              <strong>Before Refinement:</strong><br />
+              Precision: {(bertScore.pre.precision * 100).toFixed(2)}%<br />
+              Recall: {(bertScore.pre.recall * 100).toFixed(2)}%<br />
+              F1 Score: {(bertScore.pre.f1 * 100).toFixed(2)}%
+            </p>
+            <p>
+              <strong>After Refinement:</strong><br />
+              Precision: {(bertScore.post.precision * 100).toFixed(2)}%<br />
+              Recall: {(bertScore.post.recall * 100).toFixed(2)}%<br />
+              F1 Score: {(bertScore.post.f1 * 100).toFixed(2)}%
+            </p>
+          </div>
+        )}
+
+        {/* Readability Scores */}
+        {readability && (
+          <div style={{ flex: 1 }}>
+            <h3>Readability Scores (Higher Reading Ease and Lower Grade Level are Better):</h3>
+            <p>
+              <strong>Before Refinement:</strong><br />
+              Flesch Reading Ease: {readability.pre.flesch_reading_ease.toFixed(2)}<br />
+              Flesch-Kincaid Grade Level: {readability.pre.flesch_kincaid_grade.toFixed(2)}
+            </p>
+            <p>
+              <strong>After Refinement:</strong><br />
+              Flesch Reading Ease: {readability.post.flesch_reading_ease.toFixed(2)}<br />
+              Flesch-Kincaid Grade Level: {readability.post.flesch_kincaid_grade.toFixed(2)}
+            </p>
+          </div>
+        )}
+      </div>
 
       {/* Display result as Markdown */}
       {result && (
